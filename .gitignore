@@ -111,3 +111,4 @@ package-lock.json
 .vscode
 .idea
 /02-write-file/write.txt
+/03-files-in-folder/secret-folder/somefile
