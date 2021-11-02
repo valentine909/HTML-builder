@@ -17,12 +17,9 @@ readlineInterface.on('line', line => {
     console.log('Type more: ');
   }
 });
-readlineInterface.on('SIGINT', ()=> {
-  goodbye();
+process.on('SIGINT', ()=> {
+  readlineInterface.close();
 });
 readlineInterface.on('close', ()=> {
-  goodbye();
-});
-function goodbye() {
   console.log('Goodbye! Have a nice day!');
-}
+});
