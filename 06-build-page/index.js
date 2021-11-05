@@ -4,6 +4,25 @@ const path = require('path');
 const {mergeFiles} = require('../05-merge-styles/index');
 const {copyFiles} = require('../04-copy-directory/index');
 
+// helper functions
+const checkImport = () => {
+  try {
+    [mergeFiles, copyFiles].forEach(x => {
+      if (typeof x !== 'function') throw new Error('В работе этого модуля используются функции из index.js заданий 04 и 05.');
+    });
+  }
+  catch (err) {
+    console.log(err + '\n');
+    process.exit(1);
+  }
+};
+async function checkTagsAndComponentsCompatibility(tags) {
+  const components = await readdir(path.resolve(__dirname, 'components'));
+  const str1 = components.map(x => x.split('.')[0]).sort().join('');
+  const str2 = tags.sort().join('');
+  return str1 === str2;
+}
+
 const mergeSettings = {
   destinationFolder: 'project-dist',
   sourceFolder: 'styles',
@@ -58,18 +77,7 @@ async function replaceWithComponents(tags, mainHTML) {
   return mainHTML;
 }
 
-async function checkTagsAndComponentsCompatibility(tags) {
-  const components = await readdir(path.resolve(__dirname, 'components'));
-  const str1 = components.map(x => x.split('.')[0]).sort().join('');
-  const str2 = tags.sort().join('');
-  return str1 === str2;
-}
-
 async function main() {
-  await copyFiles(path.resolve(__dirname, copySettings.sourceFolder),
-    path.resolve(__dirname, copySettings.destinationFolder));
-  await mergeFiles(mergeSettings);
-
   const sourcePath = path.resolve(__dirname, buildSettings.sourceFile);
   const destinationPath = path.resolve(__dirname, buildSettings.destinationFolder, buildSettings.destinationFile);
 
@@ -77,9 +85,13 @@ async function main() {
   let tags = getTagsFromHTML(mainFileContent);
   const writer = createWriteStream(destinationPath);
 
+  checkImport();
   const check = await checkTagsAndComponentsCompatibility(tags);
   if (!check) console.log('Tags in template.html and components are not fully compatible. Please check');
 
+  await copyFiles(path.resolve(__dirname, copySettings.sourceFolder),
+    path.resolve(__dirname, copySettings.destinationFolder));
+  await mergeFiles(mergeSettings);
   const newHTML = await replaceWithComponents(tags, mainFileContent);
   writer.write(newHTML);
 }
