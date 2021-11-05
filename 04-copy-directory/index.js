@@ -2,19 +2,20 @@ const path = require('path');
 const {readdir, copyFile, mkdir} = require('fs/promises');
 const folder = (require.main === module) ? __dirname : path.dirname(require.main.filename);
 const settings = {
-  destinationFolder: 'files-copy',
-  sourceFolder: 'files',
+  destinationFolder: path.resolve(folder, 'files-copy'),
+  sourceFolder: path.resolve(folder, 'files'),
 };
 
-async function copyFiles(settingsObj){
-  const src = path.resolve(folder, settingsObj.sourceFolder);
-  const dest = path.resolve(folder, settingsObj.destinationFolder);
+async function copyFiles(src, dest){
   await mkdir(dest, {recursive: true});
-  let files = await readdir(src);
+  let files = await readdir(src, {withFileTypes: true});
   for (const file of files) {
-    await copyFile(path.resolve(src, file), path.resolve(dest, file));
+    const srcPath = path.resolve(src, file.name);
+    const destPath = path.resolve(dest, file.name);
+    if (file.isDirectory()) await copyFiles(srcPath, destPath);
+    else await copyFile(srcPath, destPath);
   }
 }
 
-if(require.main === module) copyFiles(settings);
+if(require.main === module) copyFiles(settings.sourceFolder, settings.destinationFolder);
 module.exports.copyFiles = copyFiles;
