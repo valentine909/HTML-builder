@@ -107,7 +107,6 @@ dist/
 bundle.*
 project-dist
 files-copy
-package-lock.json
 .vscode
 .idea
 /02-write-file/write.txt
