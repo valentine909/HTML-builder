@@ -83,7 +83,6 @@ async function main() {
 
   let mainFileContent = await readHTML(sourcePath);
   let tags = getTagsFromHTML(mainFileContent);
-  const writer = createWriteStream(destinationPath);
 
   checkImport();
   const check = await checkTagsAndComponentsCompatibility(tags);
@@ -93,6 +92,8 @@ async function main() {
     path.resolve(__dirname, copySettings.destinationFolder));
   await mergeFiles(mergeSettings);
   const newHTML = await replaceWithComponents(tags, mainFileContent);
+
+  const writer = createWriteStream(destinationPath);
   writer.write(newHTML);
 }
 
